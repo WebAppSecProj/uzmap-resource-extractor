@@ -3,14 +3,19 @@
 
 import os
 import sys
+
+p = os.path.abspath('.')
+sys.path.append(os.path.join(p, "uzmap_resource_extractor"))
+
 import multiprocessing
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import time
 import datetime
-import apk_util
-import uzm_util
+import libs.modules.APICloud.uzmap_resource_extractor.apk_util as apk_util
+import libs.modules.APICloud.uzmap_resource_extractor.uzm_util as uzm_util
 import traceback
+
 
 def determineSavePath(apkPath,saveTo):
     saveTo = saveTo.strip()
@@ -20,7 +25,8 @@ def determineSavePath(apkPath,saveTo):
         saveTo = os.path.dirname(apkPath)
     if '.' in apkName:
         apkName = apkName[0:apkName.rfind('.')]
-    saveApkPath = '{}/{}'.format(saveTo,apkName)
+    saveApkPath = saveTo
+    #saveApkPath = '{}/{}'.format(saveTo,apkName)
     #in order to avoid conflict , add a timestamp to saveApkPath
     if os.path.exists(saveApkPath):
         saveApkPath = '{}_{}'.format(saveApkPath,datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
@@ -143,8 +149,8 @@ resourcePath 可以是apk的路径， 也可以apk所在的目录
 '''
 def decryptAndExtractAPICloudApkResources(resourcePath,saveTo,printLog=False):
     if not os.path.isdir(resourcePath):
-        print(determineSavePath(resourcePath,saveTo))
-        return {resourcePath:uzm_util.decryptAllResourcesInApkParallel(resourcePath,determineSavePath(resourcePath,saveTo),printLog)} 
+        #print(determineSavePath(resourcePath,saveTo))
+        return {resourcePath:uzm_util.decryptAllResourcesInApkParallel(resourcePath,determineSavePath(resourcePath,saveTo),printLog)}
 
     msgQueue = multiprocessing.Manager().Queue(0)
     procPool = multiprocessing.Pool(processes=max(2, multiprocessing.cpu_count() ) ) 
@@ -162,7 +168,7 @@ def decryptAndExtractAPICloudApkResources(resourcePath,saveTo,printLog=False):
     
     if len(apkInfoMap)<2:
         apkFile = list(apkInfoMap.keys())[0]
-        decryptMap = {apkFile:(determineSavePath(apkFile,saveTo),uzm_util.decryptAllResourcesInApkParallel(apkFile,saveTo,printLog,procPool,msgQueue))} 
+        decryptMap = {apkFile:(determineSavePath(apkFile,saveTo),uzm_util.decryptAllResourcesInApkParallel(apkFile,saveTo,printLog,procPool,msgQueue))}
     else:
         decryptMap = _decryptAPICloudApks(procPool,msgQueue,apkInfoMap,saveTo,printLog)
 

@@ -9,14 +9,14 @@ import zipfile
 import tempfile
 import shutil
 import struct
-import entropy
+import libs.modules.APICloud.uzmap_resource_extractor.entropy as entropy
 from concurrent.futures import ThreadPoolExecutor
 import threading
 from queue import Queue
 import time
 import multiprocessing
 import importlib
-import file_util
+import libs.modules.APICloud.uzmap_resource_extractor.file_util as file_util
 '''
 文件使用rc4算法进行加密 rc4的key数据定义在rodata中
 0:20*4 byte 数据映射的取值
@@ -338,7 +338,7 @@ def decryptAllResourcesInApkParallel(apkFilePath,saveTo=None,printLog=False,proc
             fName,decContent = msgQueue.get_nowait()
             globalStates['processedFiles'] += 1
             msgQueue.task_done()
-            resDecrypted = file_util.legimateFileName('{}/{}'.format(storeFolder,fName))
+            resDecrypted = file_util.legimateFileName('{}/{}'.format(storeFolder,fName[len("assets/widget") + 1:]))
             decryptMap[fName] = resDecrypted
             file_util.createDirectoryIfNotExist(resDecrypted)
             with open(resDecrypted,'wb') as f:
